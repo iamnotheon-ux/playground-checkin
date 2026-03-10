@@ -13,7 +13,7 @@
 // 6. 배포된 URL을 index.html과 admin.html의 API_URL에 입력
 // ============================================================
 
-const SPREADSHEET_ID = '1azsu1dtd4WlAgevkoVnh1Z95byh4Uzlfqf9KX3Q86Wk';
+const SPREADSHEET_ID = '18VcrHoUd60Q8Hx5lhob79mQmfwpMwQdn0DT4vglQWSE';
 const SHEET_NAME = '체크인';
 const ADMIN_PIN = '0000'; // ← 원하는 4자리 PIN으로 변경하세요
 
@@ -196,7 +196,7 @@ function jsonResponse(obj) {
 // Apps Script 에디터에서 이 함수를 선택하고 ▶ 실행 버튼 클릭 (최초 1회)
 
 function initSheet() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   let sheet = ss.getSheetByName(SHEET_NAME);
 
   if (!sheet) {
