@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>판교 해링턴 플레이스 실내놀이터</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+      background: #F0F2F5;
+      color: #333;
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #4A9FE5 0%, #5BB5F5 100%);
+      color: white;
+      text-align: center;
+      padding: 24px 16px 20px;
+    }
+    .header h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .header p { font-size: 13px; opacity: 0.9; }
+
+    .notice-bar {
+      background: #FFF3E0;
+      border-left: 4px solid #FF9800;
+      padding: 12px 16px;
+      margin: 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #E65100;
+      font-weight: 600;
+    }
+
+    .card {
+      background: white;
+      margin: 0 16px 16px;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .form-group { margin-bottom: 18px; }
+    .form-group:last-child { margin-bottom: 0; }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 6px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+    }
+    .form-row .form-group { flex: 1; }
+
+    input[type="text"],
+    input[type="tel"],
+    select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid #E0E0E0;
+      border-radius: 10px;
+      font-size: 16px;
+      color: #333;
+      background: #FAFAFA;
+      transition: border-color 0.2s, background 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #4A9FE5;
+      background: #fff;
+    }
+    input.error, select.error {
+      border-color: #F44336;
+      background: #FFF8F8;
+    }
+
+    .error-msg {
+      font-size: 11px;
+      color: #F44336;
+      margin-top: 4px;
+      display: none;
+    }
+    .error-msg.show { display: block; }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px;
+      background: #F8F9FA;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+    .checkbox-group:last-child { margin-bottom: 0; }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-top: 1px;
+      accent-color: #4A9FE5;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .checkbox-group label {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #444;
+      cursor: pointer;
+      user-select: none;
+    }
+    .checkbox-group label small {
+      display: block;
+      color: #888;
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .submit-btn {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 700;
+      color: white;
+      background: #CCCCCC;
+      cursor: not-allowed;
+      transition: background 0.3s, transform 0.1s;
+      margin-top: 8px;
+    }
+    .submit-btn.active {
+      background: #4A9FE5;
+      cursor: pointer;
+    }
+    .submit-btn.active:active {
+      transform: scale(0.98);
+    }
+    .submit-btn.loading {
+      background: #90CAF9;
+      pointer-events: none;
+    }
+
+    /* 확인 모달 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 360px;
+      overflow: hidden;
+      animation: modalIn 0.25s ease-out;
+    }
+    @keyframes modalIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-header {
+      background: #4A9FE5;
+      color: white;
+      padding: 16px 20px;
+      font-size: 17px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+    .modal-body .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #F0F0F0;
+      font-size: 14px;
+    }
+    .modal-body .info-row:last-child { border-bottom: none; }
+    .modal-body .info-label { color: #888; }
+    .modal-body .info-value { font-weight: 600; color: #333; }
+
+    .modal-footer {
+      display: flex;
+      gap: 10px;
+      padding: 0 20px 20px;
+    }
+    .modal-footer button {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-edit {
+      background: #E0E0E0;
+      color: #555;
+    }
+    .btn-confirm {
+      background: #4A9FE5;
+      color: white;
+    }
+
+    /* 성공 화면 */
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .success-screen.show { display: block; }
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #E8F5E9;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      font-size: 40px;
+    }
+    .success-screen h2 {
+      font-size: 22px;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    .success-screen p {
+      font-size: 14px;
+      color: #888;
+    }
+    .success-screen .new-btn {
+      display: inline-block;
+      margin-top: 24px;
+      padding: 14px 40px;
+      background: #4A9FE5;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* 월요일 휴무 화면 */
+    .closed-screen {
+      display: none;
+      text-align: center;
+      padding: 80px 20px;
+    }
+    .closed-screen.show { display: block; }
+    .closed-icon { font-size: 64px; margin-bottom: 20px; }
+    .closed-screen h2 { font-size: 22px; color: #555; margin-bottom: 8px; }
+    .closed-screen p { font-size: 14px; color: #999; }
+
+    /* 로딩 스피너 */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- 헤더 -->
+  <div class="header">
+    <h1>판교 해링턴 플레이스</h1>
+    <p>실내놀이터 입장 체크인</p>
+  </div>
+
+  <!-- 월요일 휴무 -->
+  <div id="closedScreen" class="closed-screen">
+    <div class="closed-icon">🔒</div>
+    <h2>오늘은 휴무입니다</h2>
+    <p>매주 월요일은 운영하지 않습니다</p>
+  </div>
+
+  <!-- 메인 폼 -->
+  <div id="mainForm">
+    <!-- 안내사항 -->
+    <div class="notice-bar">
+      ⚠️ 조부모는 예약자분과 가족관계 증명서 등본 필수
+    </div>
+
+    <!-- 입력 폼 -->
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">아파트 동</label>
+          <input type="text" id="dong" inputmode="numeric" placeholder="예: 101" maxlength="4">
+          <div class="error-msg" id="dongError">3자리 이상 입력해주세요</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">아파트 호</label>
+          <input type="text" id="ho" inputmode="numeric" placeholder="예: 1201" maxlength="5">
+          <div class="error-msg" id="hoError">3자리 이상 입력해주세요</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">보호자 이름</label>
+        <input type="text" id="name" placeholder="이름을 입력해주세요" maxlength="20">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">전화번호</label>
+        <input type="tel" id="phone" inputmode="numeric" placeholder="010-0000-0000" maxlength="13">
+        <div class="error-msg" id="phoneError">전화번호 11자리를 모두 입력해주세요</div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">보호자 수</label>
+          <select id="guardians">
+            <option value="">선택</option>
+            <option value="1">1명</option>
+            <option value="2">2명</option>
+            <option value="3">3명</option>
+            <option value="4">4명</option>
+            <option value="5">5명</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">동반 아동 수</label>
+          <select id="children">
+            <option value="">선택</option>
+            <option value="1">1명</option>
+            <option value="2">2명</option>
+            <option value="3">3명</option>
+            <option value="4">4명</option>
+            <option value="5">5명</option>
+            <option value="6">6명</option>
+            <option value="7">7명</option>
+            <option value="8">8명</option>
+            <option value="9">9명</option>
+            <option value="10">10명</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">회차 선택</label>
+        <select id="session"></select>
+      </div>
+    </div>
+
+    <!-- 체크박스 -->
+    <div class="card">
+      <div class="checkbox-group" onclick="toggleCheck('paidCheck', event)">
+        <input type="checkbox" id="paidCheck">
+        <label for="paidCheck">동반보호자 수만큼 추가 결제를 완료했습니다</label>
+      </div>
+      <div class="checkbox-group" onclick="toggleCheck('privacyCheck', event)">
+        <input type="checkbox" id="privacyCheck">
+        <label for="privacyCheck">
+          개인정보 수집 및 이용에 동의합니다
+          <small>입장 관리 목적으로 개인정보(이름, 전화번호, 아파트 동·호수)를 수집하며, 운영 관리 외 다른 목적으로 사용되지 않습니다.</small>
+        </label>
+      </div>
+    </div>
+
+    <!-- 제출 버튼 -->
+    <div style="padding: 0 16px;">
+      <button id="submitBtn" class="submit-btn" disabled onclick="showConfirmModal()">
+        제출하기
+      </button>
+    </div>
+  </div>
+
+  <!-- 확인 모달 -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+      <div class="modal-header">입력 정보 확인</div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer">
+        <button class="btn-edit" onclick="closeModal()">수정</button>
+        <button class="btn-confirm" id="confirmBtn" onclick="submitData()">확정</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 성공 화면 -->
+  <div id="successScreen" class="success-screen">
+    <div class="success-icon">✓</div>
+    <h2>입장 등록 완료</h2>
+    <p>즐거운 시간 보내세요!</p>
+    <button class="new-btn" onclick="resetForm()">새로 등록하기</button>
+  </div>
+
+<script>
+  const API_URL = 'https://script.google.com/macros/s/AKfycbwvnPX7XaBRWSpxdAyrbWcr0lbjUsV3DF5-OnxtNpJSD0zQ7Wgefbh-mHF22xP-04Ey/exec';
+
+  const WEEKEND_SESSIONS = [
+    { num: 1, label: '1회차 (09:10 ~ 10:50)', start: 550, end: 650, time: '09:10~10:50' },
+    { num: 2, label: '2회차 (11:10 ~ 12:50)', start: 670, end: 770, time: '11:10~12:50' },
+    { num: 3, label: '3회차 (14:10 ~ 15:50)', start: 850, end: 950, time: '14:10~15:50' },
+    { num: 4, label: '4회차 (16:10 ~ 17:50)', start: 970, end: 1070, time: '16:10~17:50' },
+  ];
+
+  const WEEKDAY_SESSIONS = [
+    { num: 1, label: '1회차 (11:10 ~ 12:50)', start: 670, end: 770, time: '11:10~12:50' },
+    { num: 2, label: '2회차 (14:10 ~ 15:50)', start: 850, end: 950, time: '14:10~15:50' },
+    { num: 3, label: '3회차 (16:10 ~ 17:50)', start: 970, end: 1070, time: '16:10~17:50' },
+    { num: 4, label: '4회차 (18:10 ~ 19:50)', start: 1090, end: 1190, time: '18:10~19:50' },
+  ];
+
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  const isMonday = dayOfWeek === 1;
+
+  const fields = {
+    dong: { el: null, touched: false },
+    ho: { el: null, touched: false },
+    name: { el: null, touched: false },
+    phone: { el: null, touched: false },
+    guardians: { el: null, touched: false },
+    children: { el: null, touched: false },
+    session: { el: null, touched: false },
+  };
+
+  if (isMonday) {
+    document.getElementById('mainForm').classList.add('hidden');
+    document.getElementById('closedScreen').classList.add('show');
+  } else {
+    initSessionDropdown();
+    initValidation();
+  }
+
+  function initSessionDropdown() {
+    const select = document.getElementById('session');
+    const sessions = isWeekend ? WEEKEND_SESSIONS : WEEKDAY_SESSIONS;
+
+    select.innerHTML = '';
+
+    sessions.forEach((s) => {
+      const opt = document.createElement('option');
+      opt.value = s.num;
+      opt.textContent = s.label;
+      opt.dataset.time = s.time;
+      select.appendChild(opt);
+    });
+
+    let autoSession = null;
+
+    for (const s of sessions) {
+      if (currentMinutes >= s.start && currentMinutes <= s.end) {
+        autoSession = s.num;
+        break;
+      }
+    }
+
+    if (!autoSession) {
+      for (const s of sessions) {
+        if (currentMinutes < s.start) {
+          autoSession = s.num;
+          break;
+        }
+      }
+    }
+
+    if (!autoSession) {
+      autoSession = sessions[sessions.length - 1].num;
+    }
+
+    select.value = String(autoSession);
+  }
+
+  function initValidation() {
+    Object.keys(fields).forEach((key) => {
+      fields[key].el = document.getElementById(key);
+    });
+
+    ['dong', 'ho'].forEach((id) => {
+      fields[id].el.addEventListener('input', function () {
+        this.value = this.value.replace(/\D/g, '');
+        fields[id].touched = true;
+        validateField(id);
+        validateAll();
+      });
+
+      fields[id].el.addEventListener('blur', function () {
+        fields[id].touched = true;
+        validateField(id);
+      });
+    });
+
+    fields.name.el.addEventListener('input', function () {
+      fields.name.touched = true;
+      validateAll();
+    });
+
+    fields.name.el.addEventListener('blur', function () {
+      fields.name.touched = true;
+    });
+
+    fields.phone.el.addEventListener('input', function () {
+      const raw = this.value.replace(/\D/g, '').slice(0, 11);
+      let formatted = raw;
+
+      if (raw.length > 3 && raw.length <= 7) {
+        formatted = raw.slice(0, 3) + '-' + raw.slice(3);
+      } else if (raw.length > 7) {
+        formatted = raw.slice(0, 3) + '-' + raw.slice(3, 7) + '-' + raw.slice(7);
+      }
+
+      this.value = formatted;
+      fields.phone.touched = true;
+      validateField('phone');
+      validateAll();
+    });
+
+    fields.phone.el.addEventListener('blur', function () {
+      fields.phone.touched = true;
+      validateField('phone');
+    });
+
+    ['guardians', 'children', 'session'].forEach((id) => {
+      fields[id].el.addEventListener('change', function () {
+        fields[id].touched = true;
+        validateAll();
+      });
+    });
+
+    document.getElementById('paidCheck').addEventListener('change', validateAll);
+    document.getElementById('privacyCheck').addEventListener('change', validateAll);
+
+    validateAll();
+  }
+
+  function validateField(id) {
+    const el = fields[id].el;
+    const errorEl = document.getElementById(id + 'Error');
+
+    if (!fields[id].touched || !errorEl) return;
+
+    let isValid = true;
+
+    if (id === 'dong' || id === 'ho') {
+      isValid = el.value.replace(/\D/g, '').length >= 3;
+    } else if (id === 'phone') {
+      isValid = el.value.replace(/\D/g, '').length === 11;
+    }
+
+    el.classList.toggle('error', !isValid);
+    errorEl.classList.toggle('show', !isValid);
+  }
+
+  function validateAll() {
+    const dongVal = fields.dong.el.value.replace(/\D/g, '');
+    const hoVal = fields.ho.el.value.replace(/\D/g, '');
+    const nameVal = fields.name.el.value.trim();
+    const phoneVal = fields.phone.el.value.replace(/\D/g, '');
+    const guardiansVal = fields.guardians.el.value;
+    const childrenVal = fields.children.el.value;
+    const sessionVal = fields.session.el.value;
+    const paidChecked = document.getElementById('paidCheck').checked;
+    const privacyChecked = document.getElementById('privacyCheck').checked;
+
+    const isValid =
+      dongVal.length >= 3 &&
+      hoVal.length >= 3 &&
+      nameVal.length > 0 &&
+      phoneVal.length === 11 &&
+      guardiansVal !== '' &&
+      childrenVal !== '' &&
+      sessionVal !== '' &&
+      paidChecked &&
+      privacyChecked;
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = !isValid;
+    btn.classList.toggle('active', isValid);
+  }
+
+  function toggleCheck(id, e) {
+    const cb = document.getElementById(id);
+    const tag = e?.target?.tagName;
+
+    if (tag === 'INPUT' || tag === 'LABEL' || tag === 'SMALL') {
+      setTimeout(validateAll, 0);
+      return;
+    }
+
+    cb.checked = !cb.checked;
+    validateAll();
+  }
+
+  function showConfirmModal() {
+    if (document.getElementById('submitBtn').disabled) return;
+
+    const sessionSelect = document.getElementById('session');
+    const selectedOption = sessionSelect.options[sessionSelect.selectedIndex];
+
+    const info = [
+      { label: '아파트', value: fields.dong.el.value + '동 ' + fields.ho.el.value + '호' },
+      { label: '보호자', value: fields.name.el.value },
+      { label: '전화번호', value: fields.phone.el.value },
+      { label: '보호자 수', value: fields.guardians.el.value + '명' },
+      { label: '아동 수', value: fields.children.el.value + '명' },
+      { label: '회차', value: selectedOption.textContent },
+      { label: '결제 확인', value: '완료' },
+    ];
+
+    const body = document.getElementById('modalBody');
+    body.innerHTML = info.map((i) => `
+      <div class="info-row">
+        <span class="info-label">${i.label}</span>
+        <span class="info-value">${i.value}</span>
+      </div>
+    `).join('');
+
+    document.getElementById('confirmModal').classList.add('show');
+  }
+
+  function closeModal() {
+    document.getElementById('confirmModal').classList.remove('show');
+  }
+
+  async function submitData() {
+    const confirmBtn = document.getElementById('confirmBtn');
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<span class="spinner"></span>전송 중...';
+
+    const sessionSelect = document.getElementById('session');
+    const selectedOption = sessionSelect.options[sessionSelect.selectedIndex];
+
+    const payload = {
+      action: 'checkin',
+      dong: fields.dong.el.value.replace(/\D/g, ''),
+      ho: fields.ho.el.value.replace(/\D/g, ''),
+      name: fields.name.el.value.trim(),
+      phone: fields.phone.el.value,
+      guardians: parseInt(fields.guardians.el.value, 10),
+      children: parseInt(fields.children.el.value, 10),
+      session: fields.session.el.value + '회차',
+      sessionTime: selectedOption.dataset.time,
+      paid: document.getElementById('paidCheck').checked,
+      dayType: isWeekend ? '주말' : '평일',
+    };
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        closeModal();
+        document.getElementById('mainForm').classList.add('hidden');
+        document.getElementById('successScreen').classList.add('show');
+      } else {
+        throw new Error(result.error || '전송 실패');
+      }
+    } catch (err) {
+      alert('전송에 실패했습니다. 다시 시도해주세요.\n' + err.message);
+    } finally {
+      confirmBtn.disabled = false;
+      confirmBtn.innerHTML = '확정';
+    }
+  }
+
+  function resetForm() {
+    document.getElementById('successScreen').classList.remove('show');
+    document.getElementById('mainForm').classList.remove('hidden');
+
+    ['dong', 'ho', 'name', 'phone'].forEach((id) => {
+      fields[id].el.value = '';
+      fields[id].el.classList.remove('error');
+      fields[id].touched = false;
+      const errEl = document.getElementById(id + 'Error');
+      if (errEl) errEl.classList.remove('show');
+    });
+
+    fields.guardians.el.value = '';
+    fields.children.el.value = '';
+    fields.session.touched = false;
+    fields.guardians.touched = false;
+    fields.children.touched = false;
+
+    document.getElementById('paidCheck').checked = false;
+    document.getElementById('privacyCheck').checked = false;
+
+    initSessionDropdown();
+    validateAll();
+    window.scrollTo(0, 0);
+  }
+</script></body>
+</html>

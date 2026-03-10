@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 - 실내놀이터</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+      background: #F0F2F5;
+      color: #333;
+      min-height: 100vh;
+    }
+
+    /* ===== PIN 로그인 ===== */
+    .login-screen {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .login-card {
+      background: white;
+      border-radius: 16px;
+      padding: 40px 32px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: 360px;
+    }
+    .login-icon {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: #E3F2FD;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin-bottom: 16px;
+    }
+    .login-card h2 {
+      font-size: 20px;
+      color: #333;
+      margin-bottom: 4px;
+    }
+    .login-card p {
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 24px;
+    }
+    .pin-input {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid #E0E0E0;
+      border-radius: 12px;
+      font-size: 24px;
+      text-align: center;
+      letter-spacing: 12px;
+      margin-bottom: 16px;
+    }
+    .pin-input:focus {
+      outline: none;
+      border-color: #4A9FE5;
+    }
+    .pin-input.error {
+      border-color: #F44336;
+      animation: shake 0.3s ease;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: #4A9FE5;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .login-error {
+      color: #F44336;
+      font-size: 13px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    /* ===== 대시보드 헤더 ===== */
+    .dashboard { display: none; }
+    .dashboard.show { display: block; }
+
+    .dash-header {
+      background: linear-gradient(135deg, #4A9FE5 0%, #5BB5F5 100%);
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .dash-header h1 {
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .dash-header .logout-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    /* 날짜 네비게이션 */
+    .date-nav {
+      background: white;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      border-bottom: 1px solid #E8E8E8;
+    }
+    .date-nav button {
+      background: #F0F2F5;
+      border: none;
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      font-size: 18px;
+      cursor: pointer;
+      color: #555;
+    }
+    .date-nav button:hover { background: #E0E0E0; }
+    .date-nav .date-text {
+      font-size: 16px;
+      font-weight: 700;
+      color: #333;
+      min-width: 200px;
+      text-align: center;
+    }
+    .date-nav .today-btn {
+      background: #4A9FE5;
+      color: white;
+      width: auto;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* 회차 탭 */
+    .session-tabs {
+      display: flex;
+      background: white;
+      padding: 8px 12px;
+      gap: 6px;
+      overflow-x: auto;
+      border-bottom: 1px solid #E8E8E8;
+    }
+    .session-tab {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      background: #F0F2F5;
+      color: #666;
+      transition: all 0.2s;
+    }
+    .session-tab.active {
+      background: #4A9FE5;
+      color: white;
+    }
+
+    /* 통계 카드 */
+    .stats-bar {
+      display: flex;
+      gap: 10px;
+      padding: 16px;
+      overflow-x: auto;
+    }
+    .stat-card {
+      flex: 1;
+      min-width: 100px;
+      background: white;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+    .stat-card .stat-num {
+      font-size: 28px;
+      font-weight: 800;
+      color: #4A9FE5;
+    }
+    .stat-card .stat-label {
+      font-size: 12px;
+      color: #999;
+      margin-top: 2px;
+    }
+
+    /* 테이블 */
+    .table-wrapper {
+      margin: 0 16px 16px;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+    .table-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid #F0F0F0;
+    }
+    .table-header-bar h3 {
+      font-size: 15px;
+      color: #333;
+    }
+    .refresh-indicator {
+      font-size: 12px;
+      color: #999;
+    }
+    .refresh-indicator .dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #4CAF50;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead th {
+      background: #F8F9FA;
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 600;
+      color: #666;
+      border-bottom: 2px solid #E8E8E8;
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: 12px;
+      border-bottom: 1px solid #F0F0F0;
+      white-space: nowrap;
+    }
+    tbody tr:hover { background: #F8FBFF; }
+    tbody tr.new-entry {
+      animation: highlightNew 3s ease-out;
+    }
+    @keyframes highlightNew {
+      0% { background: #E3F2FD; }
+      100% { background: transparent; }
+    }
+    .paid-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .paid-badge.yes { background: #E8F5E9; color: #2E7D32; }
+    .paid-badge.no { background: #FFEBEE; color: #C62828; }
+
+    .action-btn {
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-right: 4px;
+    }
+    .edit-btn { background: #E3F2FD; color: #1976D2; }
+    .delete-btn { background: #FFEBEE; color: #C62828; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+    .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state p { font-size: 14px; }
+
+    /* 전체 집계 바 */
+    .total-bar {
+      margin: 0 16px 16px;
+      background: linear-gradient(135deg, #4A9FE5 0%, #5BB5F5 100%);
+      border-radius: 12px;
+      padding: 16px 20px;
+      color: white;
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+    }
+    .total-bar .total-item .num {
+      font-size: 24px;
+      font-weight: 800;
+    }
+    .total-bar .total-item .lbl {
+      font-size: 11px;
+      opacity: 0.9;
+    }
+
+    /* 알림 토스트 */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #333;
+      color: white;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      z-index: 2000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      animation: slideIn 0.3s ease-out;
+      max-width: 350px;
+    }
+    .toast.hide { animation: slideOut 0.3s ease-in forwards; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } }
+    @keyframes slideOut { to { transform: translateX(100%); opacity: 0; } }
+
+    /* 수정 모달 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1500;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .modal-overlay.show { display: flex; }
+
+    .edit-modal {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 420px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .edit-modal-header {
+      background: #4A9FE5;
+      color: white;
+      padding: 16px 20px;
+      font-size: 16px;
+      font-weight: 700;
+      border-radius: 16px 16px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .edit-modal-header .close-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .edit-modal-body {
+      padding: 20px;
+    }
+    .edit-field {
+      margin-bottom: 14px;
+    }
+    .edit-field label {
+      display: block;
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+    .edit-field input,
+    .edit-field select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid #E0E0E0;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .edit-field input:focus,
+    .edit-field select:focus {
+      outline: none;
+      border-color: #4A9FE5;
+    }
+    .edit-modal-footer {
+      padding: 0 20px 20px;
+      display: flex;
+      gap: 10px;
+    }
+    .edit-modal-footer button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .cancel-btn { background: #E0E0E0; color: #555; }
+    .save-btn { background: #4A9FE5; color: white; }
+
+    /* 삭제 확인 모달 */
+    .delete-modal {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 340px;
+      text-align: center;
+      padding: 32px 24px 24px;
+    }
+    .delete-modal .del-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    .delete-modal h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    .delete-modal p {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 20px;
+    }
+    .delete-modal .btns {
+      display: flex;
+      gap: 10px;
+    }
+    .delete-modal .btns button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .del-cancel { background: #E0E0E0; color: #555; }
+    .del-confirm { background: #F44336; color: white; }
+
+    /* 반응형 테이블 스크롤 */
+    .table-scroll { overflow-x: auto; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- PIN 로그인 -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-icon">🔐</div>
+      <h2>관리자 로그인</h2>
+      <p>판교 해링턴 플레이스 실내놀이터</p>
+      <input type="password" id="pinInput" class="pin-input" maxlength="4"
+             inputmode="numeric" placeholder="····" autocomplete="off">
+      <button class="login-btn" onclick="verifyPin()">로그인</button>
+      <div class="login-error" id="loginError">PIN 번호가 올바르지 않습니다</div>
+    </div>
+  </div>
+
+  <!-- 대시보드 -->
+  <div id="dashboard" class="dashboard">
+    <!-- 헤더 -->
+    <div class="dash-header">
+      <h1>실내놀이터 관리</h1>
+      <button class="logout-btn" onclick="logout()">로그아웃</button>
+    </div>
+
+    <!-- 날짜 네비게이션 -->
+    <div class="date-nav">
+      <button onclick="changeDate(-1)">◀</button>
+      <div class="date-text" id="dateDisplay"></div>
+      <button onclick="changeDate(1)">▶</button>
+      <button class="today-btn" onclick="goToday()">오늘</button>
+    </div>
+
+    <!-- 회차 탭 -->
+    <div class="session-tabs" id="sessionTabs"></div>
+
+    <!-- 통계 -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-num" id="statGuardians">0</div>
+        <div class="stat-label">보호자</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statChildren">0</div>
+        <div class="stat-label">아동</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statTotal">0</div>
+        <div class="stat-label">전체</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statEntries">0</div>
+        <div class="stat-label">건수</div>
+      </div>
+    </div>
+
+    <!-- 전체 일일 집계 -->
+    <div class="total-bar" id="totalBar">
+      <div class="total-item">
+        <div class="num" id="totalGuardians">0</div>
+        <div class="lbl">오늘 전체 보호자</div>
+      </div>
+      <div class="total-item">
+        <div class="num" id="totalChildren">0</div>
+        <div class="lbl">오늘 전체 아동</div>
+      </div>
+      <div class="total-item">
+        <div class="num" id="totalAll">0</div>
+        <div class="lbl">오늘 전체 인원</div>
+      </div>
+    </div>
+
+    <!-- 테이블 -->
+    <div class="table-wrapper">
+      <div class="table-header-bar">
+        <h3>입장 목록</h3>
+        <div class="refresh-indicator">
+          <span class="dot"></span>
+          <span id="refreshTime">실시간 업데이트</span>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>시간</th>
+              <th>동</th>
+              <th>호</th>
+              <th>이름</th>
+              <th>전화번호</th>
+              <th>보호자</th>
+              <th>아동</th>
+              <th>회차</th>
+              <th>결제</th>
+              <th>관리</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">📋</div>
+        <p>아직 입장 기록이 없습니다</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 수정 모달 -->
+  <div class="modal-overlay" id="editModal">
+    <div class="edit-modal">
+      <div class="edit-modal-header">
+        <span>정보 수정</span>
+        <button class="close-btn" onclick="closeEditModal()">&times;</button>
+      </div>
+      <div class="edit-modal-body">
+        <input type="hidden" id="editId">
+        <div class="edit-field">
+          <label>동</label>
+          <input type="text" id="editDong" inputmode="numeric" maxlength="4">
+        </div>
+        <div class="edit-field">
+          <label>호</label>
+          <input type="text" id="editHo" inputmode="numeric" maxlength="5">
+        </div>
+        <div class="edit-field">
+          <label>보호자 이름</label>
+          <input type="text" id="editName" maxlength="20">
+        </div>
+        <div class="edit-field">
+          <label>전화번호</label>
+          <input type="tel" id="editPhone" maxlength="13">
+        </div>
+        <div class="edit-field">
+          <label>보호자 수</label>
+          <select id="editGuardians">
+            <option value="1">1명</option>
+            <option value="2">2명</option>
+            <option value="3">3명</option>
+            <option value="4">4명</option>
+            <option value="5">5명</option>
+          </select>
+        </div>
+        <div class="edit-field">
+          <label>아동 수</label>
+          <select id="editChildren">
+            <option value="1">1명</option>
+            <option value="2">2명</option>
+            <option value="3">3명</option>
+            <option value="4">4명</option>
+            <option value="5">5명</option>
+            <option value="6">6명</option>
+            <option value="7">7명</option>
+            <option value="8">8명</option>
+            <option value="9">9명</option>
+            <option value="10">10명</option>
+          </select>
+        </div>
+        <div class="edit-field">
+          <label>결제 확인</label>
+          <select id="editPaid">
+            <option value="Y">완료</option>
+            <option value="N">미완료</option>
+          </select>
+        </div>
+      </div>
+      <div class="edit-modal-footer">
+        <button class="cancel-btn" onclick="closeEditModal()">취소</button>
+        <button class="save-btn" onclick="saveEdit()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 삭제 확인 모달 -->
+  <div class="modal-overlay" id="deleteModal">
+    <div class="delete-modal">
+      <div class="del-icon">⚠️</div>
+      <h3>삭제 확인</h3>
+      <p id="deleteMsg">이 입장 기록을 삭제하시겠습니까?</p>
+      <div class="btns">
+        <button class="del-cancel" onclick="closeDeleteModal()">취소</button>
+        <button class="del-confirm" onclick="confirmDelete()">삭제</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // ★ Google Apps Script 배포 URL을 아래에 입력하세요 ★
+    // ============================================================
+  const API_URL = 'https://script.google.com/macros/s/AKfycbwvnPX7XaBRWSpxdAyrbWcr0lbjUsV3DF5-OnxtNpJSD0zQ7Wgefbh-mHF22xP-04Ey/exec';
+
+
+    // ===================== 회차 설정 =====================
+    const WEEKEND_SESSIONS = [
+      { num: '1회차', time: '09:10~10:50' },
+      { num: '2회차', time: '11:10~12:50' },
+      { num: '3회차', time: '14:10~15:50' },
+      { num: '4회차', time: '16:10~17:50' },
+    ];
+    const WEEKDAY_SESSIONS = [
+      { num: '1회차', time: '11:10~12:50' },
+      { num: '2회차', time: '14:10~15:50' },
+      { num: '3회차', time: '16:10~17:50' },
+      { num: '4회차', time: '18:10~19:50' },
+    ];
+
+    // ===================== 상태 =====================
+    let currentDate = new Date();
+    let allEntries = [];
+    let knownIds = new Set();
+    let activeSession = 'all';
+    let pollingTimer = null;
+    let deleteTargetId = null;
+    let audioCtx = null;
+
+    // ===================== PIN 인증 =====================
+    document.getElementById('pinInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') verifyPin();
+    });
+
+    async function verifyPin() {
+      const pin = document.getElementById('pinInput').value;
+      if (pin.length !== 4) {
+        showPinError();
+        return;
+      }
+
+      try {
+        const res = await fetch(API_URL + '?action=verifyPin&pin=' + encodeURIComponent(pin));
+        const data = await res.json();
+
+        if (data.success) {
+          sessionStorage.setItem('admin_pin', pin);
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('dashboard').classList.add('show');
+          initDashboard();
+        } else {
+          showPinError();
+        }
+      } catch (err) {
+        alert('서버 연결 실패: ' + err.message);
+      }
+    }
+
+    function showPinError() {
+      const input = document.getElementById('pinInput');
+      const error = document.getElementById('loginError');
+      input.classList.add('error');
+      error.style.display = 'block';
+      input.value = '';
+      input.focus();
+      setTimeout(() => {
+        input.classList.remove('error');
+      }, 600);
+    }
+
+    function logout() {
+      sessionStorage.removeItem('admin_pin');
+      clearInterval(pollingTimer);
+      document.getElementById('dashboard').classList.remove('show');
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('pinInput').value = '';
+      document.getElementById('loginError').style.display = 'none';
+    }
+
+    // ===================== 대시보드 초기화 =====================
+    function initDashboard() {
+      updateDateDisplay();
+      buildSessionTabs();
+      fetchData();
+      pollingTimer = setInterval(fetchData, 5000);
+    }
+
+    // 자동 로그인 (세션 유지)
+    if (sessionStorage.getItem('admin_pin')) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('dashboard').classList.add('show');
+      initDashboard();
+    }
+
+    // ===================== 날짜 관리 =====================
+    function formatDate(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function getDayName(date) {
+      const days = ['일', '월', '화', '수', '목', '금', '토'];
+      return days[date.getDay()];
+    }
+
+    function getDayType(date) {
+      const day = date.getDay();
+      return (day === 0 || day === 6) ? '주말' : '평일';
+    }
+
+    function updateDateDisplay() {
+      const dateStr = formatDate(currentDate);
+      const dayName = getDayName(currentDate);
+      const dayType = getDayType(currentDate);
+      const isMonday = currentDate.getDay() === 1;
+
+      let display = `${dateStr} (${dayName}) ${dayType}`;
+      if (isMonday) display += ' - 휴무';
+
+      document.getElementById('dateDisplay').textContent = display;
+      buildSessionTabs();
+    }
+
+    function changeDate(delta) {
+      currentDate.setDate(currentDate.getDate() + delta);
+      activeSession = 'all';
+      knownIds = new Set();
+      updateDateDisplay();
+      fetchData();
+    }
+
+    function goToday() {
+      currentDate = new Date();
+      activeSession = 'all';
+      knownIds = new Set();
+      updateDateDisplay();
+      fetchData();
+    }
+
+    // ===================== 회차 탭 =====================
+    function buildSessionTabs() {
+      const container = document.getElementById('sessionTabs');
+      const dayType = getDayType(currentDate);
+      const sessions = dayType === '주말' ? WEEKEND_SESSIONS : WEEKDAY_SESSIONS;
+
+      let html = `<button class="session-tab ${activeSession === 'all' ? 'active' : ''}"
+                    onclick="filterSession('all')">전체</button>`;
+      sessions.forEach(s => {
+        const isActive = activeSession === s.num ? 'active' : '';
+        html += `<button class="session-tab ${isActive}"
+                   onclick="filterSession('${s.num}')">${s.num} (${s.time})</button>`;
+      });
+      container.innerHTML = html;
+    }
+
+    function filterSession(session) {
+      activeSession = session;
+      buildSessionTabs();
+      renderData();
+    }
+
+    // ===================== 데이터 조회 =====================
+    async function fetchData() {
+      try {
+        const dateStr = formatDate(currentDate);
+        const res = await fetch(API_URL + '?action=getData&date=' + dateStr);
+        const result = await res.json();
+
+        if (result.success) {
+          const newEntries = result.data.filter(e => !knownIds.has(e.id));
+          const isInitialLoad = knownIds.size === 0;
+
+          allEntries = result.data;
+
+          // 새 항목 감지 (초기 로드 제외)
+          if (!isInitialLoad && newEntries.length > 0) {
+            notifyNewEntries(newEntries);
+          }
+
+          knownIds = new Set(result.data.map(e => e.id));
+          renderData();
+          updateRefreshTime();
+        }
+      } catch (err) {
+        console.error('데이터 조회 실패:', err);
+      }
+    }
+
+    function updateRefreshTime() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('refreshTime').textContent = `${h}:${m}:${s} 업데이트`;
+    }
+
+    // ===================== 렌더링 =====================
+    function renderData() {
+      const filtered = activeSession === 'all'
+        ? allEntries
+        : allEntries.filter(e => e.session === activeSession);
+
+      renderStats(filtered);
+      renderTotalStats(allEntries);
+      renderTable(filtered);
+    }
+
+    function renderStats(data) {
+      let guardians = 0, children = 0;
+      data.forEach(e => {
+        guardians += Number(e.guardians) || 0;
+        children += Number(e.children) || 0;
+      });
+      document.getElementById('statGuardians').textContent = guardians;
+      document.getElementById('statChildren').textContent = children;
+      document.getElementById('statTotal').textContent = guardians + children;
+      document.getElementById('statEntries').textContent = data.length;
+    }
+
+    function renderTotalStats(data) {
+      let guardians = 0, children = 0;
+      data.forEach(e => {
+        guardians += Number(e.guardians) || 0;
+        children += Number(e.children) || 0;
+      });
+      document.getElementById('totalGuardians').textContent = guardians;
+      document.getElementById('totalChildren').textContent = children;
+      document.getElementById('totalAll').textContent = guardians + children;
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('tableBody');
+      const empty = document.getElementById('emptyState');
+
+      if (data.length === 0) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+
+      empty.style.display = 'none';
+
+      tbody.innerHTML = data.map((e, i) => `
+        <tr id="row-${e.id}">
+          <td>${i + 1}</td>
+          <td>${e.time}</td>
+          <td>${e.dong}</td>
+          <td>${e.ho}</td>
+          <td>${e.name}</td>
+          <td>${e.phone}</td>
+          <td>${e.guardians}</td>
+          <td>${e.children}</td>
+          <td>${e.session}</td>
+          <td><span class="paid-badge ${e.paid === 'Y' ? 'yes' : 'no'}">${e.paid === 'Y' ? '완료' : '미완료'}</span></td>
+          <td>
+            <button class="action-btn edit-btn" onclick='openEditModal(${JSON.stringify(e)})'>수정</button>
+            <button class="action-btn delete-btn" onclick="openDeleteModal('${e.id}', '${e.dong}동 ${e.ho}호 ${e.name}')">삭제</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // ===================== 알림 =====================
+    function notifyNewEntries(entries) {
+      playNotificationSound();
+      entries.forEach(e => {
+        showToast(`새 입장: ${e.dong}동 ${e.ho}호 ${e.name} (${e.session})`);
+      });
+
+      // 새 항목 하이라이트
+      setTimeout(() => {
+        entries.forEach(e => {
+          const row = document.getElementById('row-' + e.id);
+          if (row) row.classList.add('new-entry');
+        });
+      }, 100);
+    }
+
+    function playNotificationSound() {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        // 2음 차임 소리
+        [800, 1000].forEach((freq, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.frequency.value = freq;
+          osc.type = 'sine';
+          gain.gain.value = 0.2;
+          const start = audioCtx.currentTime + i * 0.15;
+          osc.start(start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.4);
+          osc.stop(start + 0.4);
+        });
+      } catch (err) {
+        console.warn('알림음 재생 실패:', err);
+      }
+    }
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add('hide');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // ===================== 수정 기능 =====================
+    function openEditModal(entry) {
+      document.getElementById('editId').value = entry.id;
+      document.getElementById('editDong').value = entry.dong;
+      document.getElementById('editHo').value = entry.ho;
+      document.getElementById('editName').value = entry.name;
+      document.getElementById('editPhone').value = entry.phone;
+      document.getElementById('editGuardians').value = entry.guardians;
+      document.getElementById('editChildren').value = entry.children;
+      document.getElementById('editPaid').value = entry.paid;
+      document.getElementById('editModal').classList.add('show');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.remove('show');
+    }
+
+    async function saveEdit() {
+      const pin = sessionStorage.getItem('admin_pin');
+      const id = document.getElementById('editId').value;
+
+      const payload = {
+        action: 'update',
+        pin: pin,
+        id: id,
+        updates: {
+          dong: document.getElementById('editDong').value,
+          ho: document.getElementById('editHo').value,
+          name: document.getElementById('editName').value,
+          phone: document.getElementById('editPhone').value,
+          guardians: parseInt(document.getElementById('editGuardians').value),
+          children: parseInt(document.getElementById('editChildren').value),
+          paid: document.getElementById('editPaid').value,
+        }
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload),
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          closeEditModal();
+          showToast('수정 완료');
+          fetchData();
+        } else {
+          alert('수정 실패: ' + (result.error || ''));
+        }
+      } catch (err) {
+        alert('수정 중 오류: ' + err.message);
+      }
+    }
+
+    // ===================== 삭제 기능 =====================
+    function openDeleteModal(id, label) {
+      deleteTargetId = id;
+      document.getElementById('deleteMsg').textContent = `"${label}" 입장 기록을 삭제하시겠습니까?`;
+      document.getElementById('deleteModal').classList.add('show');
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('deleteModal').classList.remove('show');
+      deleteTargetId = null;
+    }
+
+    async function confirmDelete() {
+      if (!deleteTargetId) return;
+
+      const pin = sessionStorage.getItem('admin_pin');
+      const payload = {
+        action: 'delete',
+        pin: pin,
+        id: deleteTargetId,
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload),
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          closeDeleteModal();
+          showToast('삭제 완료');
+          knownIds.delete(deleteTargetId);
+          fetchData();
+        } else {
+          alert('삭제 실패: ' + (result.error || ''));
+        }
+      } catch (err) {
+        alert('삭제 중 오류: ' + err.message);
+      }
+    }
+
+    // 오디오 컨텍스트 활성화 (사용자 인터랙션 필요)
+    document.addEventListener('click', function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      document.removeEventListener('click', initAudio);
+    });
+  </script>
+</body>
+</html>
